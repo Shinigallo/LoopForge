@@ -661,9 +661,10 @@ function workspaceCanRestore(run,ws){
 function workspaceRestoreButtonHTML(){
   const hint=lfT(
     '工作区是本次运行存放代码和生成文件的目录。恢复会从保存的快照还原文件，并在 IDE 中打开。',
-    'The workspace contains the code and files generated during this run. Restoring brings back the files from the saved snapshot and opens them in the IDE.'
+    'The workspace contains the code and files generated during this run. Restoring brings back the files from the saved snapshot and opens them in the IDE.',
+    'Il workspace contiene il codice e i file generati durante questa esecuzione. Il ripristino recupera i file dallo snapshot salvato e li apre nell\'IDE.'
   );
-  return `<button type="button" class="button ghost small" data-workspace-restore title="${escapeHTML(hint)}" hidden>${lfT('恢复工作区','Restore workspace')}</button>`;
+  return `<button type="button" class="button ghost small" data-workspace-restore title="${escapeHTML(hint)}" hidden>${lfT('恢复工作区','Restore workspace','Ripristina workspace')}</button>`;
 }
 function syncRunWorkspaceRestoreButton(run,host){
   const button=host.querySelector('[data-workspace-restore]');
@@ -674,7 +675,7 @@ function syncRunWorkspaceRestoreButton(run,host){
 }
 function workspacePaneHTML(run){
   const ws=state.runWorkspace?.runId===run.id?state.runWorkspace:null;
-  if(ws?.restoring)return `<div class="workspace-loading" role="status"><span class="workspace-spinner" aria-hidden="true"></span><b>${lfT('正在恢复工作区…','Restoring workspace…')}</b></div>`;
+  if(ws?.restoring)return `<div class="workspace-loading" role="status"><span class="workspace-spinner" aria-hidden="true"></span><b>${lfT('正在恢复工作区…','Restoring workspace…','Ripristino del workspace in corso…')}</b></div>`;
   if(!ws||ws.loading||ws.cleaned!==runWorkspaceWasCleaned(run))return '<div class="workspace-loading"><span class="workspace-spinner"></span><b>正在读取工作区</b><p>确认工作区是否仍可浏览…</p></div>';
   if(ws.error)return `<div class="workspace-unavailable"><span>!</span><b>工作区加载失败</b><p>${escapeHTML(ws.error)}</p><button class="button ghost small" data-workspace-refresh>重试</button></div>`;
   if(!ws.info?.available||ws.restoreError)return workspaceUnavailableHTML(ws.info?.reason,ws.restoreError||ws.info?.restore?.error,workspaceCanRestore(run,ws));

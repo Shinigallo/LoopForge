@@ -1,18 +1,22 @@
 // Runtime UI translation. The app renders Chinese copy directly; in English
-// mode this layer rewrites text nodes and a few attributes as they appear,
-// using the zh→en dictionary in i18n-en.js. Chinese mode is a no-op.
+// or Italian mode this layer rewrites text nodes and a few attributes as they
+// appear, using the zh→en / zh→it dictionaries in i18n-en.js / i18n-it.js.
+// Chinese mode is a no-op.
 (() => {
   const root = document.documentElement;
-  const lang = root.dataset.lang === 'en' ? 'en' : 'zh';
+  const DICTS = { en: window.LF_I18N_EN, it: window.LF_I18N_IT };
+  const ORDER = ['zh', 'en', 'it'];
+  const lang = Object.prototype.hasOwnProperty.call(DICTS, root.dataset.lang) ? root.dataset.lang : 'zh';
   window.lfLang = () => lang;
+  window.lfNextLang = () => ORDER[(ORDER.indexOf(lang) + 1) % ORDER.length];
   window.lfSetLang = next => {
-    localStorage.setItem('loopforge.lang', next === 'en' ? 'en' : 'zh');
+    localStorage.setItem('loopforge.lang', Object.prototype.hasOwnProperty.call(DICTS, next) ? next : 'zh');
     location.reload();
   };
-  window.lfT = (zh, en) => (lang === 'en' ? en : zh);
-  if (lang !== 'en') return;
+  window.lfT = (zh, en, it) => (lang === 'en' ? en : lang === 'it' ? (it !== undefined ? it : zh) : zh);
+  if (lang === 'zh') return;
 
-  const dict = window.LF_I18N_EN || {};
+  const dict = DICTS[lang] || {};
   const HAN = /[\u3400-\u9fff\u300c\u300d\uff0c\u3002\uff1a\uff08\uff09\u3001\uff1b\uff01\uff1f]/;
   const SKIP = new Set(['SCRIPT', 'STYLE', 'TEXTAREA', 'CODE', 'PRE', 'NOSCRIPT']);
   const SKIP_SEL = '[data-i18n-skip],.monaco-editor,.xterm,.log-line,.run-log,.markdown-body,[contenteditable="true"]';
@@ -26,16 +30,34 @@
   const sentences = fragments.filter(k => k.length >= 6 && HAN.test(k));
   const sentenceRE = sentences.length ? new RegExp(sentences.map(escape).join('|'), 'g') : null;
   const punct = [[/，/g, ', '], [/。/g, '. '], [/：/g, ': '], [/；/g, '; '], [/、/g, ', '], [/！/g, '! '], [/？/g, '? '], [/（/g, ' ('], [/）/g, ') '], [/「|」/g, '"'], [/『|』/g, '"']];
-  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const UNITS = {次: ['time', 'times'], 步: ['step', 'steps'], 个: ['', ''], 台: ['', ''], 条: ['', '']};
+  const LOCALE = {
+    en: {
+      months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+      units: {次: ['time', 'times'], 步: ['step', 'steps'], 个: ['', ''], 台: ['', ''], 条: ['', '']},
+      stage: 'Stage $1',
+      round: 'Round $1',
+      priority: {高: 'High', 中: 'Medium', 低: 'Low'},
+      io: 'In $1 / Out $2',
+    },
+    it: {
+      months: ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'],
+      units: {次: ['volta', 'volte'], 步: ['passaggio', 'passaggi'], 个: ['', ''], 台: ['', ''], 条: ['', '']},
+      stage: 'Fase $1',
+      round: 'Turno $1',
+      priority: {高: 'Alta', 中: 'Media', 低: 'Bassa'},
+      io: 'In $1 / Out $2',
+    },
+  }[lang];
+  const MONTHS = LOCALE.months;
+  const UNITS = LOCALE.units;
   const patterns = [
-    [/第\s*(\d+)\s*(?:阶段|Stage)/g, 'Stage $1'],
-    [/第\s*(\d+)\s*(?:轮|Round)/g, 'Round $1'],
-    [/ · (高|中|低) · /g, (_, p) => ` · ${{高: 'High', 中: 'Medium', 低: 'Low'}[p]} · `],
-    [/入\s*(\d+)\s*\/\s*出\s*(\d+)/g, 'In $1 / Out $2'],
+    [/第\s*(\d+)\s*(?:阶段|Stage|Fase)/g, LOCALE.stage],
+    [/第\s*(\d+)\s*(?:轮|Round|Turno)/g, LOCALE.round],
+    [/ · (高|中|低) · /g, (_, p) => ` · ${LOCALE.priority[p]} · `],
+    [/入\s*(\d+)\s*\/\s*出\s*(\d+)/g, LOCALE.io],
     [/(\d{4})年(\d{1,2})月/g, (_, y, m) => `${MONTHS[m - 1] || m} ${y}`],
     [/(^|[^\d])(\d{1,2})月(?![\u3400-\u9fff])/g, (_, pre, m) => pre + (MONTHS[m - 1] || m)],
-    [/共\s*(\d+)\s*(?=[A-Za-z])/g, '$1 '],
+    [/共\s*(\d+)\s*(?=[A-Za-zÀ-ÿ])/g, '$1 '],
     [/(\d{4}-\d{2}-\d{2})\s*至\s*(\d{4}-\d{2}-\d{2})/g, '$1 – $2'],
     [/(\d+(?:\.\d+)?)\s*(次|步|个|台|条)(?![\u3400-\u9fff])/g, (_, n, u) => {
       const word = UNITS[u][Number(n) === 1 ? 0 : 1];
@@ -73,6 +95,7 @@
     return out;
   }
   window.lfTranslate = translate;
+  window.lfT = (zh, en, it) => (lang === 'en' ? en : it !== undefined ? it : translate(zh));
 
   function skipped(el) {
     return !el || SKIP.has(el.tagName) || (el.closest && el.closest(SKIP_SEL));

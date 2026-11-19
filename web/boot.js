@@ -3,10 +3,12 @@
 window.lfT = window.lfT || ((zh) => zh);
 (() => {
   const root = document.documentElement;
+  const htmlLang = { zh: 'zh-CN', en: 'en', it: 'it' };
   let lang = 'zh';
   try {
-    lang = localStorage.getItem('loopforge.lang') === 'en' ? 'en' : 'zh';
+    const saved = localStorage.getItem('loopforge.lang');
+    lang = Object.prototype.hasOwnProperty.call(htmlLang, saved) ? saved : 'zh';
   } catch (_) { /* Restricted storage still permits the default interface. */ }
   root.dataset.lang = lang;
-  root.lang = lang === 'en' ? 'en' : 'zh-CN';
+  root.lang = htmlLang[lang];
 })();

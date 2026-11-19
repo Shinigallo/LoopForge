@@ -95,7 +95,7 @@ async function api(path, options={}) {
     const body = await res.json().catch(()=>({}));
     if (!res.ok) {
       const err=new Error(body.error || `HTTP ${res.status}`);err.code=body.code||'';
-      if(body.code==='repository_required'&&body.error)toastActions.set(body.error,{label:lfT('绑定仓库','Add repository'),run:()=>typeof openRepositoryModal==='function'&&openRepositoryModal()});
+      if(body.code==='repository_required'&&body.error)toastActions.set(body.error,{label:lfT('绑定仓库','Add repository','Collega repository'),run:()=>typeof openRepositoryModal==='function'&&openRepositoryModal()});
       throw err;
     }
     return body;
@@ -1041,7 +1041,7 @@ function bind(){
   };
   $$('.canvas-view-toggle [data-flow-view]').forEach(btn=>btn.onclick=()=>setFlowView(btn.dataset.flowView));
   const refreshRunnersBtn=$('#refreshRunners');if(refreshRunnersBtn)refreshRunnersBtn.onclick=()=>refreshRunners();
-  $('#langToggle').onclick=()=>window.lfSetLang(window.lfLang()==='en'?'zh':'en');
+  $('#langToggle').onclick=()=>window.lfSetLang(window.lfNextLang?window.lfNextLang():(window.lfLang()==='en'?'it':window.lfLang()==='it'?'zh':'en'));
   $('#themeToggle').onclick=toggleTheme;renderThemeToggle();
   const profileWrap = $('#userProfileWrap');
   const userBadge = $('#userBadge');

@@ -1,4 +1,4 @@
-document.getElementById('loginLang').onclick = () => window.lfSetLang(window.lfLang() === 'en' ? 'zh' : 'en');
+document.getElementById('loginLang').onclick = () => window.lfSetLang(window.lfNextLang ? window.lfNextLang() : (window.lfLang() === 'en' ? 'it' : window.lfLang() === 'it' ? 'zh' : 'en'));
 document.getElementById('loginTheme').onclick = () => {
   const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
   document.documentElement.dataset.theme = next;
@@ -11,16 +11,16 @@ let mode = 'login', signup = false;
 
 function render() {
   const creating = mode !== 'login';
-  $('loginSubtitle').textContent = mode === 'setup' ? t('创建管理员账号', 'Create the administrator account') : creating ? t('创建你的账号', 'Create your account') : t('登录你的交付工作台', 'Sign in to your delivery workspace');
+  $('loginSubtitle').textContent = mode === 'setup' ? t('创建管理员账号', 'Create the administrator account', 'Crea account amministratore') : creating ? t('创建你的账号', 'Create your account', 'Crea il tuo account') : t('登录你的交付工作台', 'Sign in to your delivery workspace', 'Accedi al tuo workspace di delivery');
   $('setupNotice').hidden = mode !== 'setup';
   $('confirmField').hidden = !creating;
   $('passwordRule').hidden = !creating;
   $('loginForm').elements.confirm.required = creating;
   $('loginForm').elements.password.autocomplete = creating ? 'new-password' : 'current-password';
-  $('loginSubmit').textContent = mode === 'setup' ? t('创建并进入', 'Create and continue') : creating ? t('注册并进入', 'Sign up') : t('登录', 'Sign in');
+  $('loginSubmit').textContent = mode === 'setup' ? t('创建并进入', 'Create and continue', 'Crea e continua') : creating ? t('注册并进入', 'Sign up', 'Registrati') : t('登录', 'Sign in', 'Accedi');
   $('loginSwitch').hidden = mode === 'setup' || !signup;
-  $('switchText').textContent = creating ? t('已有账号？', 'Already have an account?') : t('还没有账号？', 'No account yet?');
-  $('switchMode').textContent = creating ? t('登录', 'Sign in') : t('注册', 'Sign up');
+  $('switchText').textContent = creating ? t('已有账号？', 'Already have an account?', 'Hai già un account?') : t('还没有账号？', 'No account yet?', 'Non hai ancora un account?');
+  $('switchMode').textContent = creating ? t('登录', 'Sign in', 'Accedi') : t('注册', 'Sign up', 'Registrati');
   $('loginContact').hidden = mode === 'setup' || signup;
   $('loginError').textContent = '';
 }
@@ -39,7 +39,7 @@ $('loginForm').onsubmit = async event => {
   const form = event.currentTarget, button = $('loginSubmit'), error = $('loginError');
   const creating = mode !== 'login';
   if (creating && form.elements.password.value !== form.elements.confirm.value) {
-    error.textContent = t('两次输入的密码不一致', 'Passwords do not match');
+    error.textContent = t('两次输入的密码不一致', 'Passwords do not match', 'Le password non corrispondono');
     return;
   }
   button.disabled = true;
@@ -50,7 +50,7 @@ $('loginForm').onsubmit = async event => {
       body: JSON.stringify({login: form.elements.login.value.trim(), password: form.elements.password.value}),
     });
     const payload = await response.json();
-    if (!response.ok) throw new Error(payload.error || t('操作失败', 'Request failed'));
+    if (!response.ok) throw new Error(payload.error || t('操作失败', 'Request failed', 'Operazione non riuscita'));
     location.replace('/');
   } catch (err) { error.textContent = err.message; button.disabled = false; }
 };
