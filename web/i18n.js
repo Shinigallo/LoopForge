@@ -63,6 +63,11 @@
       const word = UNITS[u][Number(n) === 1 ? 0 : 1];
       return word ? `${n} ${word}` : n;
     }],
+    ...(lang === 'it' ? [
+      [/(\d+)\s*(?:小时|ore)/g, '$1 h '],
+      [/(\d+)\s*(?:分钟|min)/g, '$1 min '],
+      [/(\d+)\s*秒/g, '$1 s'],
+    ] : []),
   ];
   const cache = new Map();
 

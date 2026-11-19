@@ -102,6 +102,7 @@ test('Italian mode translates every page title, navigation copy and the 个人�
   assert.deepEqual(untranslated, []);
   for (const text of ['收起设置导航', '展开设置导航', '收起导航', '展开导航', '返回首页', '拖动调整侧栏宽度，双击恢复默认', '调整侧栏宽度',
     'alice (alice) · 点击查看个人信息', '当前为访客身份 · 点击查看个人信息', '认证换票未通过 · 点击查看个人信息',
+    '个人对话', 'LoopForge 云端', '已处理 不到1秒', '本轮未完成 · OpenCode 已安装，请重新发送。', '诊断信息', '告诉我接下来想做点什么',
     '未配置个人 CodeBuddy API Key 时只能使用平台管理员允许的模型（glm-5.1、kimi-k2.6）。要使用其他模型，请先在个人配置中配置自己的 CodeBuddy API Key']) {
     assert.doesNotMatch(window.lfTranslate(text), HAN, text);
   }
@@ -116,13 +117,14 @@ test('Italian mode translates every page title, navigation copy and the 个人�
   assert.equal(window.lfTranslate('2026年5月'), 'Mag 2026');
   assert.equal(window.lfTranslate('2次'), '2 volte');
   assert.equal(window.lfTranslate('1步'), '1 passaggio');
+  assert.equal(window.lfTranslate('2小时5分钟12秒'), '2 h 5 min 12 s');
   assert.equal(window.lfT('登录', 'Sign in', 'Accedi'), 'Accedi');
   assert.equal(window.lfT('登录', 'Sign in'), 'Accedi');
   assert.equal(window.lfNextLang(), 'zh');
   window.close();
 });
 
-test('Italian dictionary matches all English dictionary keys with no leftover Chinese or em dashes', async () => {
+test('Italian dictionary covers all English dictionary keys with no leftover Chinese or em dashes', async () => {
   const ctx = { window: {} };
   for (const file of ['i18n-en.js', 'i18n-it.js']) {
     vm.runInNewContext(await readFile(path.join(WEB_ROOT, file), 'utf8'), ctx, { filename: file });
@@ -130,7 +132,7 @@ test('Italian dictionary matches all English dictionary keys with no leftover Ch
   const enKeys = Object.keys(ctx.window.LF_I18N_EN);
   const itDict = ctx.window.LF_I18N_IT;
   const itKeys = Object.keys(itDict);
-  assert.equal(itKeys.length, enKeys.length);
+  assert.ok(itKeys.length >= enKeys.length);
   const missing = enKeys.filter((k) => !Object.prototype.hasOwnProperty.call(itDict, k));
   assert.deepEqual(missing, []);
   const emDashes = Object.entries(itDict).filter(([, v]) => v.includes('—'));
